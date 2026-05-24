@@ -1,43 +1,596 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title>Mini Wallet API</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+
+  <title>Mini Wallet</title>
+
+  <style>
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      padding: 30px;
+      background: #f3f4f6;
+      font-family: Arial, sans-serif;
+      color: #111827;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: auto;
+    }
+
+    .header {
+      background: #111827;
+      color: white;
+      padding: 30px;
+      border-radius: 20px;
+      margin-bottom: 25px;
+    }
+
+    .header h1 {
+      margin: 0;
+      font-size: 48px;
+    }
+
+    .header p {
+      margin-top: 10px;
+      color: #d1d5db;
+      font-size: 18px;
+    }
+
+    .wallet-card {
+      background: #111827;
+      color: white;
+      border-radius: 20px;
+      padding: 30px;
+      margin-bottom: 25px;
+
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .wallet-label {
+      color: #9ca3af;
+      font-size: 14px;
+      margin-bottom: 10px;
+    }
+
+    .wallet-account {
+      font-size: 28px;
+      font-weight: bold;
+    }
+
+    .wallet-balance {
+      font-size: 54px;
+      font-weight: bold;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+    }
+
+    .card {
+      background: white;
+      padding: 25px;
+      border-radius: 20px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+    }
+
+    .card h2 {
+      margin-top: 0;
+      margin-bottom: 10px;
+      font-size: 28px;
+    }
+
+    .endpoint {
+      display: inline-block;
+      background: #f3f4f6;
+      padding: 6px 10px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+      font-size: 14px;
+      color: #374151;
+    }
+
+    input {
+      width: 100%;
+      padding: 14px;
+      border-radius: 12px;
+      border: 1px solid #d1d5db;
+      margin-bottom: 12px;
+      font-size: 15px;
+    }
+
+    button {
+      width: 100%;
+      padding: 14px;
+      border: none;
+      border-radius: 12px;
+      background: #111827;
+      color: white;
+      font-size: 16px;
+      cursor: pointer;
+      transition: 0.2s;
+    }
+
+    button:hover {
+      background: #374151;
+    }
+
+    .result-card {
+      margin-top: 25px;
+      background: white;
+      border-radius: 20px;
+      padding: 25px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+    }
+
+    .transaction {
+      background: #f9fafb;
+      border: 1px solid #e5e7eb;
+      padding: 14px;
+      border-radius: 12px;
+      margin-top: 12px;
+    }
+
+    .success {
+      border-left: 5px solid #10b981;
+    }
+
+    .error {
+      border-left: 5px solid #ef4444;
+    }
+
+    @media (max-width: 900px) {
+      .grid {
+        grid-template-columns: 1fr;
+      }
+
+      .wallet-card {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 20px;
+      }
+    }
+
+  </style>
 </head>
+
 <body>
-  <h1>Mini Wallet</h1>
 
-  <h2>Create Account</h2>
+  <div class="container">
 
-  <input id="owner" placeholder="Owner name" />
-  <input id="type" placeholder="Account type" />
+    <div class="header">
+      <h1>Mini Wallet</h1>
+      <p>A simple UI connected to your REST API backend</p>
+    </div>
 
-  <button onclick="createAccount()">Create Account</button>
+    <div class="wallet-card">
 
-  <h2>Response</h2>
-  <pre id="response"></pre>
+      <div>
+        <div class="wallet-label">SELECTED ACCOUNT</div>
+        <div class="wallet-account" id="selectedAccount">
+          No account selected yet
+        </div>
+      </div>
+
+      <div>
+        <div class="wallet-label">BALANCE</div>
+        <div class="wallet-balance" id="balanceDisplay">
+          $0.00
+        </div>
+      </div>
+
+    </div>
+
+    <div class="grid">
+
+      <div class="card">
+
+        <h2>Create Account</h2>
+
+        <div class="endpoint">
+          POST /accounts
+        </div>
+
+        <input
+          id="owner"
+          placeholder="Owner name (e.g. Jane Doe)"
+        >
+
+        <input
+          id="type"
+          placeholder="Account type (e.g. checking)"
+        >
+
+        <button onclick="createAccount()">
+          Create Account
+        </button>
+
+      </div>
+
+      <div class="card">
+
+        <h2>Get Account Details</h2>
+
+        <div class="endpoint">
+          GET /accounts/:id
+        </div>
+
+        <input
+          id="accountId"
+          placeholder="Account ID (e.g. acc_1)"
+        >
+
+        <button onclick="getAccount()">
+          Get Account
+        </button>
+
+      </div>
+
+      <div class="card">
+
+        <h2>Get Balance</h2>
+
+        <div class="endpoint">
+          GET /accounts/:id/balance
+        </div>
+
+        <input
+          id="balanceAccountId"
+          placeholder="Account ID (e.g. acc_1)"
+        >
+
+        <button onclick="getBalance()">
+          Get Balance
+        </button>
+
+      </div>
+
+      <div class="card">
+
+        <h2>Transfer Funds</h2>
+
+        <div class="endpoint">
+          POST /transfers
+        </div>
+
+        <input
+          id="fromAccountId"
+          placeholder="From Account ID (e.g. acc_1)"
+        >
+
+        <input
+          id="toAccountId"
+          placeholder="To Account ID (e.g. acc_2)"
+        >
+
+        <input
+          id="amount"
+          type="number"
+          placeholder="Amount (e.g. 200)"
+        >
+
+        <button onclick="transferFunds()">
+          Transfer Funds
+        </button>
+
+      </div>
+
+      <div class="card">
+
+        <h2>Transaction History</h2>
+
+        <div class="endpoint">
+          GET /transactions
+        </div>
+
+        <button onclick="getTransactions()">
+          View Transactions
+        </button>
+
+      </div>
+
+    </div>
+
+    <div class="result-card" id="resultCard">
+
+      <h2>Result</h2>
+
+      <div id="resultContent">
+        Results will appear here...
+      </div>
+
+    </div>
+
+  </div>
 
   <script>
-    async function createAccount() {
-      const owner = document.getElementById("owner").value;
-      const type = document.getElementById("type").value;
 
-      const response = await fetch("/accounts", {
-        method: "POST",
+    const API_KEY = "demo-key-123";
+
+    function showResult(html, isError = false) {
+
+      const resultCard =
+        document.getElementById("resultCard");
+
+      resultCard.className =
+        isError
+          ? "result-card error"
+          : "result-card success";
+
+      document.getElementById("resultContent").innerHTML = html;
+    }
+
+    async function apiRequest(url, options = {}) {
+
+      const response = await fetch(url, {
+
+        ...options,
+
         headers: {
           "Content-Type": "application/json",
-          "x-api-key": "demo-key-123"
-        },
-        body: JSON.stringify({
-          owner: owner,
-          type: type
-        })
+          "x-api-key": API_KEY,
+          ...options.headers
+        }
+
       });
 
       const data = await response.json();
 
-      document.getElementById("response").textContent =
-        JSON.stringify(data, null, 2);
+      if (!response.ok) {
+        throw new Error(data.error || "Something went wrong");
+      }
+
+      return data;
     }
+
+    async function createAccount() {
+
+      try {
+
+        const owner =
+          document.getElementById("owner").value;
+
+        const type =
+          document.getElementById("type").value;
+
+        const account = await apiRequest("/accounts", {
+
+          method: "POST",
+
+          body: JSON.stringify({
+            owner,
+            type
+          })
+
+        });
+
+        showResult(`
+
+          <h2>Account Created</h2>
+
+          <p><strong>ID:</strong> ${account.id}</p>
+
+          <p><strong>Owner:</strong> ${account.owner}</p>
+
+          <p><strong>Type:</strong> ${account.type}</p>
+
+          <p><strong>Status:</strong> ${account.status}</p>
+
+          <p><strong>Balance:</strong> $${account.balance}</p>
+
+        `);
+
+      } catch (error) {
+
+        showResult(`
+          <h2>Error</h2>
+          <p>${error.message}</p>
+        `, true);
+
+      }
+
+    }
+
+    async function getAccount() {
+
+      try {
+
+        const accountId =
+          document.getElementById("accountId").value;
+
+        const account =
+          await apiRequest(`/accounts/${accountId}`);
+
+        showResult(`
+
+          <h2>Account Details</h2>
+
+          <p><strong>ID:</strong> ${account.id}</p>
+
+          <p><strong>Owner:</strong> ${account.owner}</p>
+
+          <p><strong>Type:</strong> ${account.type}</p>
+
+          <p><strong>Status:</strong> ${account.status}</p>
+
+          <p><strong>Balance:</strong> $${account.balance}</p>
+
+        `);
+
+      } catch (error) {
+
+        showResult(`
+          <h2>Error</h2>
+          <p>${error.message}</p>
+        `, true);
+
+      }
+
+    }
+
+    async function getBalance() {
+
+      try {
+
+        const accountId =
+          document.getElementById("balanceAccountId").value;
+
+        const balance =
+          await apiRequest(`/accounts/${accountId}/balance`);
+
+        document.getElementById("balanceDisplay")
+          .textContent = `$${balance.balance}`;
+
+        document.getElementById("selectedAccount")
+          .textContent = balance.accountId;
+
+        showResult(`
+
+          <h2>Balance Retrieved</h2>
+
+          <p><strong>Account:</strong> ${balance.accountId}</p>
+
+          <p><strong>Balance:</strong> $${balance.balance}</p>
+
+        `);
+
+      } catch (error) {
+
+        showResult(`
+          <h2>Error</h2>
+          <p>${error.message}</p>
+        `, true);
+
+      }
+
+    }
+
+    async function transferFunds() {
+
+      try {
+
+        const fromAccountId =
+          document.getElementById("fromAccountId").value;
+
+        const toAccountId =
+          document.getElementById("toAccountId").value;
+
+        const amount =
+          Number(document.getElementById("amount").value);
+
+        const transfer = await apiRequest("/transfers", {
+
+          method: "POST",
+
+          body: JSON.stringify({
+            fromAccountId,
+            toAccountId,
+            amount
+          })
+
+        });
+
+        showResult(`
+
+          <h2>Transfer Completed</h2>
+
+          <p><strong>Transaction ID:</strong> ${transfer.id}</p>
+
+          <p><strong>From:</strong> ${transfer.fromAccountId}</p>
+
+          <p><strong>To:</strong> ${transfer.toAccountId}</p>
+
+          <p><strong>Amount:</strong> $${transfer.amount}</p>
+
+          <p><strong>Status:</strong> ${transfer.status}</p>
+
+        `);
+
+      } catch (error) {
+
+        showResult(`
+          <h2>Error</h2>
+          <p>${error.message}</p>
+        `, true);
+
+      }
+
+    }
+
+    async function getTransactions() {
+
+      try {
+
+        const transactions =
+          await apiRequest("/transactions");
+
+        if (transactions.length === 0) {
+
+          showResult(`
+            <h2>No Transactions Yet</h2>
+          `);
+
+          return;
+        }
+
+        const transactionHtml =
+          transactions.map(transaction => `
+
+            <div class="transaction">
+
+              <p>
+                <strong>${transaction.id}</strong>
+              </p>
+
+              <p>
+                ${transaction.fromAccountId}
+                →
+                ${transaction.toAccountId}
+              </p>
+
+              <p>
+                Amount: $${transaction.amount}
+              </p>
+
+              <p>
+                Status: ${transaction.status}
+              </p>
+
+            </div>
+
+          `).join("");
+
+        showResult(`
+
+          <h2>Transaction History</h2>
+
+          ${transactionHtml}
+
+        `);
+
+      } catch (error) {
+
+        showResult(`
+          <h2>Error</h2>
+          <p>${error.message}</p>
+        `, true);
+
+      }
+
+    }
+
   </script>
+
 </body>
 </html>

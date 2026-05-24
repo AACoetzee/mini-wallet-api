@@ -59,6 +59,27 @@ POST /transfers
   "amount": 200
 }
 ```
+## UI Screenshots
+
+### Mini Wallet Dashboard
+
+![Mini Wallet Dashboard](images/home.png)
+
+### Account Created
+
+![Account Created](images/account-created.png)
+
+### Balance Lookup
+
+![Balance Lookup](images/balance.png)
+
+### Transfer Funds
+
+![Transfer Funds](images/transfer.png)
+
+### Transaction History
+
+![Transaction History](images/transactions.png)
 
 ## What I Learned
 
