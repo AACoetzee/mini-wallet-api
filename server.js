@@ -30,7 +30,6 @@ const PORT = 3000;
 let accounts = [];
 let transactions = [];
 
-
 // Create account
 app.post("/accounts", (req, res) => {
 
