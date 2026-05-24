@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Mini Wallet API</title>
+</head>
+<body>
+  <h1>Mini Wallet</h1>
+
+  <h2>Create Account</h2>
+
+  <input id="owner" placeholder="Owner name" />
+  <input id="type" placeholder="Account type" />
+
+  <button onclick="createAccount()">Create Account</button>
+
+  <h2>Response</h2>
+  <pre id="response"></pre>
+
+  <script>
+    async function createAccount() {
+      const owner = document.getElementById("owner").value;
+      const type = document.getElementById("type").value;
+
+      const response = await fetch("/accounts", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "x-api-key": "demo-key-123"
+        },
+        body: JSON.stringify({
+          owner: owner,
+          type: type
+        })
+      });
+
+      const data = await response.json();
+
+      document.getElementById("response").textContent =
+        JSON.stringify(data, null, 2);
+    }
+  </script>
+</body>
+</html>
