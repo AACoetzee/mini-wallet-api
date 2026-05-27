@@ -331,6 +331,17 @@
       document.getElementById("resultContent").innerHTML = html;
     }
 
+    function showError(error) {
+
+      showResult(`
+        <h2>Error</h2>
+        <p>${error.message}</p>
+        ${error.code ? `<p><strong>Code:</strong> ${error.code}</p>` : ""}
+        ${error.requestId ? `<p><strong>Request ID:</strong> ${error.requestId}</p>` : ""}
+      `, true);
+
+    }
+
     async function apiRequest(url, options = {}) {
 
       const response = await fetch(url, {
@@ -348,7 +359,13 @@
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.error || "Something went wrong");
+        const apiError = data.error || {};
+        const error = new Error(apiError.message || "Something went wrong");
+
+        error.code = apiError.code;
+        error.requestId = apiError.requestId;
+
+        throw error;
       }
 
       return data;
@@ -393,10 +410,7 @@
 
       } catch (error) {
 
-        showResult(`
-          <h2>Error</h2>
-          <p>${error.message}</p>
-        `, true);
+        showError(error);
 
       }
 
@@ -430,10 +444,7 @@
 
       } catch (error) {
 
-        showResult(`
-          <h2>Error</h2>
-          <p>${error.message}</p>
-        `, true);
+        showError(error);
 
       }
 
@@ -467,10 +478,7 @@
 
       } catch (error) {
 
-        showResult(`
-          <h2>Error</h2>
-          <p>${error.message}</p>
-        `, true);
+        showError(error);
 
       }
 
@@ -513,16 +521,19 @@
 
           <p><strong>Amount:</strong> $${transfer.amount}</p>
 
+          <p><strong>Currency:</strong> ${transfer.currency}</p>
+
           <p><strong>Status:</strong> ${transfer.status}</p>
+
+          <p><strong>Reference:</strong> ${transfer.referenceId}</p>
+
+          <p><strong>Created:</strong> ${transfer.createdAt}</p>
 
         `);
 
       } catch (error) {
 
-        showResult(`
-          <h2>Error</h2>
-          <p>${error.message}</p>
-        `, true);
+        showError(error);
 
       }
 
@@ -560,11 +571,19 @@
               </p>
 
               <p>
-                Amount: $${transaction.amount}
+                Amount: $${transaction.amount} ${transaction.currency}
               </p>
 
               <p>
                 Status: ${transaction.status}
+              </p>
+
+              <p>
+                Reference: ${transaction.referenceId}
+              </p>
+
+              <p>
+                Created: ${transaction.createdAt}
               </p>
 
             </div>
@@ -581,10 +600,7 @@
 
       } catch (error) {
 
-        showResult(`
-          <h2>Error</h2>
-          <p>${error.message}</p>
-        `, true);
+        showError(error);
 
       }
 

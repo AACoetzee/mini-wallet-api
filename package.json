@@ -1,16 +1,25 @@
 {
   "name": "mini-wallet-api",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "description": "A fintech-style wallet API demo for account creation, balance lookup, transfers, and transaction history.",
+  "main": "src/server.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "node src/server.js",
+    "dev": "node --watch src/server.js",
+    "test": "echo \"No automated tests yet\""
   },
-  "keywords": [],
+  "keywords": [
+    "api",
+    "express",
+    "fintech",
+    "wallet",
+    "solutions-engineering"
+  ],
   "author": "",
   "license": "ISC",
   "type": "commonjs",
   "dependencies": {
+    "dotenv": "^17.2.3",
     "express": "^5.2.1"
   }
 }
