@@ -239,6 +239,30 @@
 
       <div class="card">
 
+        <h2>Find Accounts</h2>
+
+        <div class="endpoint">
+          GET /accounts?owner=&type=
+        </div>
+
+        <input
+          id="searchOwner"
+          placeholder="Owner name (e.g. Jane)"
+        >
+
+        <input
+          id="searchType"
+          placeholder="Account type (optional)"
+        >
+
+        <button onclick="searchAccounts()">
+          Find Accounts
+        </button>
+
+      </div>
+
+      <div class="card">
+
         <h2>Get Balance</h2>
 
         <div class="endpoint">
@@ -252,6 +276,31 @@
 
         <button onclick="getBalance()">
           Get Balance
+        </button>
+
+      </div>
+
+      <div class="card">
+
+        <h2>Update Balance</h2>
+
+        <div class="endpoint">
+          PATCH /accounts/:id/balance
+        </div>
+
+        <input
+          id="updateBalanceAccountId"
+          placeholder="Account ID (e.g. acc_1)"
+        >
+
+        <input
+          id="newBalance"
+          type="number"
+          placeholder="New balance (e.g. 1250)"
+        >
+
+        <button onclick="updateBalance()">
+          Update Balance
         </button>
 
       </div>
@@ -406,6 +455,8 @@
 
           <p><strong>Balance:</strong> $${account.balance}</p>
 
+          ${account.balanceUpdatedAt ? `<p><strong>Balance Updated:</strong> ${account.balanceUpdatedAt}</p>` : ""}
+
         `);
 
       } catch (error) {
@@ -440,6 +491,75 @@
 
           <p><strong>Balance:</strong> $${account.balance}</p>
 
+          ${account.balanceUpdatedAt ? `<p><strong>Balance Updated:</strong> ${account.balanceUpdatedAt}</p>` : ""}
+
+        `);
+
+      } catch (error) {
+
+        showError(error);
+
+      }
+
+    }
+
+    async function searchAccounts() {
+
+      try {
+
+        const owner =
+          document.getElementById("searchOwner").value;
+
+        const type =
+          document.getElementById("searchType").value;
+
+        const params = new URLSearchParams();
+
+        if (owner) {
+          params.append("owner", owner);
+        }
+
+        if (type) {
+          params.append("type", type);
+        }
+
+        const data =
+          await apiRequest(`/accounts?${params.toString()}`);
+
+        if (data.results.length === 0) {
+
+          showResult(`
+            <h2>No Matching Accounts</h2>
+          `);
+
+          return;
+        }
+
+        const accountHtml =
+          data.results.map(account => `
+
+            <div class="transaction">
+
+              <p><strong>${account.id}</strong></p>
+
+              <p>${account.owner}</p>
+
+              <p>${account.type} - ${account.status}</p>
+
+              <p>Balance: $${account.balance} ${account.currency}</p>
+
+              ${account.balanceUpdatedAt ? `<p>Balance Updated: ${account.balanceUpdatedAt}</p>` : ""}
+
+            </div>
+
+          `).join("");
+
+        showResult(`
+
+          <h2>Matching Accounts</h2>
+
+          ${accountHtml}
+
         `);
 
       } catch (error) {
@@ -473,6 +593,56 @@
           <p><strong>Account:</strong> ${balance.accountId}</p>
 
           <p><strong>Balance:</strong> $${balance.balance}</p>
+
+        `);
+
+      } catch (error) {
+
+        showError(error);
+
+      }
+
+    }
+
+    async function updateBalance() {
+
+      try {
+
+        const accountId =
+          document.getElementById("updateBalanceAccountId").value;
+
+        const balance =
+          Number(document.getElementById("newBalance").value);
+
+        const update = await apiRequest(`/accounts/${accountId}/balance`, {
+
+          method: "PATCH",
+
+          body: JSON.stringify({
+            balance
+          })
+
+        });
+
+        document.getElementById("balanceDisplay")
+          .textContent = `$${update.balance}`;
+
+        document.getElementById("selectedAccount")
+          .textContent = update.accountId;
+
+        showResult(`
+
+          <h2>Balance Updated</h2>
+
+          <p><strong>Account:</strong> ${update.accountId}</p>
+
+          <p><strong>Previous Balance:</strong> $${update.previousBalance}</p>
+
+          <p><strong>New Balance:</strong> $${update.balance}</p>
+
+          <p><strong>Currency:</strong> ${update.currency}</p>
+
+          <p><strong>Updated:</strong> ${update.balanceUpdatedAt}</p>
 
         `);
 

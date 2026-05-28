@@ -21,6 +21,38 @@ function findAccountById(id) {
   return accounts.find(account => account.id === id);
 }
 
+function searchAccounts({ owner, type }) {
+  return accounts.filter(account => {
+    const ownerMatches = owner
+      ? account.owner.toLowerCase().includes(owner.toLowerCase())
+      : true;
+
+    const typeMatches = type
+      ? account.type.toLowerCase() === type.toLowerCase()
+      : true;
+
+    return ownerMatches && typeMatches;
+  });
+}
+
+function updateAccountBalance(id, balance) {
+  const account = findAccountById(id);
+
+  if (!account) {
+    return null;
+  }
+
+  const previousBalance = account.balance;
+
+  account.balance = balance;
+  account.balanceUpdatedAt = new Date().toISOString();
+
+  return {
+    account,
+    previousBalance
+  };
+}
+
 function createTransaction({ fromAccountId, toAccountId, amount, currency }) {
   const transaction = {
     id: `txn_${transactions.length + 1}`,
@@ -45,5 +77,7 @@ module.exports = {
   createAccount,
   createTransaction,
   findAccountById,
-  listTransactions
+  listTransactions,
+  searchAccounts,
+  updateAccountBalance
 };

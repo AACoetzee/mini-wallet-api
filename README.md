@@ -19,10 +19,11 @@ I built this project to practice the kind of API walkthroughs, integration troub
 This API models a simplified digital wallet platform. A customer or partner application can:
 
 1. Create wallet accounts for users.
-2. Retrieve account details.
-3. Check balances.
-4. Transfer funds between accounts.
-5. Review transaction history.
+2. Search for accounts when the account ID is unknown.
+3. Retrieve account details.
+4. Check or update balances.
+5. Transfer funds between accounts.
+6. Review transaction history.
 
 That makes it useful as a demo project for explaining API integrations, request/response behavior, authentication, and common failure cases.
 
@@ -154,10 +155,65 @@ Response:
 GET /accounts/acc_1
 ```
 
+### Find Accounts Without an ID
+
+```http
+GET /accounts?owner=Jane
+```
+
+Optional filters:
+
+```http
+GET /accounts?owner=Jane&type=checking
+```
+
+Response:
+
+```json
+{
+  "results": [
+    {
+      "id": "acc_1",
+      "owner": "Jane Doe",
+      "type": "checking",
+      "balance": 1000,
+      "currency": "USD",
+      "status": "active"
+    }
+  ]
+}
+```
+
 ### Get Account Balance
 
 ```http
 GET /accounts/acc_1/balance
+```
+
+### Update Account Balance
+
+```http
+PATCH /accounts/acc_1/balance
+```
+
+Request:
+
+```json
+{
+  "balance": 1250
+}
+```
+
+Response:
+
+```json
+{
+  "accountId": "acc_1",
+  "previousBalance": 1000,
+  "balance": 1250,
+  "currency": "USD",
+  "balanceUpdatedAt": "2026-05-27T14:30:00.000Z"
+}
 ```
 
 ### Transfer Funds
@@ -204,10 +260,12 @@ A simple demo flow for this project:
 1. Start the server with `npm start`.
 2. Open `http://localhost:3000`.
 3. Create two accounts.
-4. Check the balance for the first account.
-5. Transfer funds from the first account to the second account.
-6. View transaction history.
-7. Try an invalid request, such as a transfer with insufficient funds, to show error handling.
+4. Search for an account by owner name if you do not remember the account ID.
+5. Check the balance for the first account.
+6. Update a balance with `PATCH /accounts/:id/balance`.
+7. Transfer funds from the first account to the second account.
+8. View transaction history.
+9. Try an invalid request, such as a transfer with insufficient funds, to show error handling.
 
 ## Project Structure
 
@@ -218,7 +276,7 @@ src/
   data/store.js           In-memory account and transaction store
   middleware/auth.js      API key authentication
   middleware/errorHandler.js
-  routes/accounts.js      Account creation, lookup, and balance routes
+  routes/accounts.js      Account creation, search, lookup, and balance routes
   routes/transfers.js     Transfer route and validation
   routes/transactions.js  Transaction history route
   utils/errors.js         Shared structured error response helper
@@ -237,6 +295,10 @@ src/
 ### Balance Lookup
 
 ![Balance Lookup](images/balance.png)
+
+### Balance Update
+
+![Balance Update](images/balance-update.jpg)
 
 ### Transfer Funds
 
