@@ -70,6 +70,12 @@ The API will run at:
 http://localhost:3000
 ```
 
+Interactive API documentation will be available at:
+
+```text
+http://localhost:3000/docs
+```
+
 ## Authentication
 
 Protected endpoints require an API key in the `x-api-key` header.
@@ -106,18 +112,45 @@ Errors use a consistent response shape so developers can troubleshoot failed req
 
 ## Postman Collection
 
-You can test the API using the shared Postman collection:
+You can test the API by importing the collection included in this repo:
+
+```text
+postman/Mini-Wallet-API.postman_collection.json
+```
+
+You can also use the shared Postman collection:
 
 [Mini Wallet API Postman Collection](https://aac-1999.postman.co/workspace/Unit~72b83eca-0890-4b60-854b-fa3786100897/collection/25753790-c935a4f9-8a9b-415a-b30c-60ec0493edf9?action=share&source=copy-link&creator=25753790)
 
 The collection is useful for walking through the API like a customer integration demo:
 
 1. Create accounts.
-2. Retrieve account details.
-3. Check balances.
-4. Transfer funds.
-5. View transaction history.
-6. Test error cases like missing authentication or insufficient funds.
+2. Search for accounts by owner.
+3. Retrieve account details.
+4. Check and update balances.
+5. Transfer funds.
+6. View transaction history.
+7. Test error cases like missing authentication, invalid balances, or insufficient funds.
+
+## OpenAPI Documentation
+
+This project includes an OpenAPI contract at:
+
+```text
+openapi.yaml
+```
+
+When the server is running, you can view and test the API in Swagger UI:
+
+```text
+http://localhost:3000/docs
+```
+
+Use this API key in Swagger's **Authorize** button:
+
+```text
+demo-key-123
+```
 
 ## Example API Flow
 

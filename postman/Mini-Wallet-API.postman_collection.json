@@ -1,0 +1,443 @@
+{
+  "info": {
+    "_postman_id": "25753790-c935a4f9-8a9b-415a-b30c-60ec0493edf9",
+    "name": "Mini Wallet API",
+    "description": "Customer-style API walkthrough for the Mini Wallet API. Covers account creation, account search, balance lookup, balance updates, transfers, transaction history, and common error cases.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "auth": {
+    "type": "apikey",
+    "apikey": [
+      {
+        "key": "key",
+        "value": "x-api-key",
+        "type": "string"
+      },
+      {
+        "key": "value",
+        "value": "{{apiKey}}",
+        "type": "string"
+      },
+      {
+        "key": "in",
+        "value": "header",
+        "type": "string"
+      }
+    ]
+  },
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "exec": []
+      }
+    },
+    {
+      "listen": "test",
+      "script": {
+        "type": "text/javascript",
+        "exec": []
+      }
+    }
+  ],
+  "item": [
+    {
+      "name": "System",
+      "item": [
+        {
+          "name": "API Status",
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                ""
+              ]
+            },
+            "description": "Confirms the API server is running."
+          },
+          "response": []
+        },
+        {
+          "name": "Swagger Docs",
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/docs",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "docs"
+              ]
+            },
+            "description": "Opens the interactive Swagger UI documentation."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Accounts",
+      "item": [
+        {
+          "name": "Create Primary Account",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Primary account created', function () {",
+                  "  pm.response.to.have.status(201);",
+                  "});",
+                  "",
+                  "const account = pm.response.json();",
+                  "pm.collectionVariables.set('primaryAccountId', account.id);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"owner\": \"Jane Doe\",\n  \"type\": \"checking\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/accounts",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "accounts"
+              ]
+            },
+            "description": "Creates the first account and stores its ID as primaryAccountId."
+          },
+          "response": []
+        },
+        {
+          "name": "Create Secondary Account",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Secondary account created', function () {",
+                  "  pm.response.to.have.status(201);",
+                  "});",
+                  "",
+                  "const account = pm.response.json();",
+                  "pm.collectionVariables.set('secondaryAccountId', account.id);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"owner\": \"John Doe\",\n  \"type\": \"savings\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/accounts",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "accounts"
+              ]
+            },
+            "description": "Creates the second account and stores its ID as secondaryAccountId."
+          },
+          "response": []
+        },
+        {
+          "name": "Find Accounts By Owner",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/accounts?owner=Jane",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "accounts"
+              ],
+              "query": [
+                {
+                  "key": "owner",
+                  "value": "Jane"
+                }
+              ]
+            },
+            "description": "Finds account details when the account ID is unknown."
+          },
+          "response": []
+        },
+        {
+          "name": "Get Primary Account Details",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/accounts/{{primaryAccountId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "accounts",
+                "{{primaryAccountId}}"
+              ]
+            },
+            "description": "Retrieves details for the primary account."
+          },
+          "response": []
+        },
+        {
+          "name": "Get Primary Account Balance",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/accounts/{{primaryAccountId}}/balance",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "accounts",
+                "{{primaryAccountId}}",
+                "balance"
+              ]
+            },
+            "description": "Retrieves the primary account balance."
+          },
+          "response": []
+        },
+        {
+          "name": "Update Primary Account Balance",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"balance\": 1250\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/accounts/{{primaryAccountId}}/balance",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "accounts",
+                "{{primaryAccountId}}",
+                "balance"
+              ]
+            },
+            "description": "Updates the primary account balance with PATCH."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Transfers",
+      "item": [
+        {
+          "name": "Transfer Funds",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"fromAccountId\": \"{{primaryAccountId}}\",\n  \"toAccountId\": \"{{secondaryAccountId}}\",\n  \"amount\": 200\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/transfers",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "transfers"
+              ]
+            },
+            "description": "Transfers funds from the primary account to the secondary account."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Transactions",
+      "item": [
+        {
+          "name": "List Transactions",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/transactions",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "transactions"
+              ]
+            },
+            "description": "Lists all completed transfer transactions."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Error Cases",
+      "item": [
+        {
+          "name": "Unauthorized Request",
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/accounts/{{primaryAccountId}}/balance",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "accounts",
+                "{{primaryAccountId}}",
+                "balance"
+              ]
+            },
+            "description": "Shows the structured UNAUTHORIZED error when x-api-key is missing."
+          },
+          "response": []
+        },
+        {
+          "name": "Invalid Balance Update",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"balance\": -10\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/accounts/{{primaryAccountId}}/balance",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "accounts",
+                "{{primaryAccountId}}",
+                "balance"
+              ]
+            },
+            "description": "Shows validation for invalid balance updates."
+          },
+          "response": []
+        },
+        {
+          "name": "Insufficient Funds Transfer",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"fromAccountId\": \"{{primaryAccountId}}\",\n  \"toAccountId\": \"{{secondaryAccountId}}\",\n  \"amount\": 999999\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/transfers",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "transfers"
+              ]
+            },
+            "description": "Shows the structured INSUFFICIENT_FUNDS error response."
+          },
+          "response": []
+        }
+      ]
+    }
+  ],
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:3000",
+      "type": "string"
+    },
+    {
+      "key": "apiKey",
+      "value": "demo-key-123",
+      "type": "string"
+    },
+    {
+      "key": "primaryAccountId",
+      "value": "acc_1",
+      "type": "string"
+    },
+    {
+      "key": "secondaryAccountId",
+      "value": "acc_2",
+      "type": "string"
+    }
+  ]
+}

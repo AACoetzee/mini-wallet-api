@@ -1,0 +1,385 @@
+openapi: 3.0.3
+info:
+  title: Mini Wallet API
+  version: 1.0.0
+  description: |
+    A fintech-style wallet API demo for account creation, account search,
+    balance lookup and updates, transfers, and transaction history.
+servers:
+  - url: http://localhost:3000
+    description: Local development server
+security:
+  - ApiKeyAuth: []
+tags:
+  - name: System
+    description: Health and landing endpoints
+  - name: Accounts
+    description: Account creation, search, lookup, and balance workflows
+  - name: Transfers
+    description: Move funds between accounts
+  - name: Transactions
+    description: Transaction history
+paths:
+  /:
+    get:
+      tags:
+        - System
+      summary: Get API status
+      security: []
+      responses:
+        "200":
+          description: API status response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Mini Wallet API is running!
+  /accounts:
+    post:
+      tags:
+        - Accounts
+      summary: Create an account
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateAccountRequest"
+            examples:
+              checking:
+                value:
+                  owner: Jane Doe
+                  type: checking
+      responses:
+        "201":
+          description: Account created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Account"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+    get:
+      tags:
+        - Accounts
+      summary: Search accounts
+      description: Find account details when you do not know the account ID.
+      parameters:
+        - in: query
+          name: owner
+          schema:
+            type: string
+          example: Jane
+          description: Partial owner name to search for.
+        - in: query
+          name: type
+          schema:
+            type: string
+          example: checking
+          description: Account type to filter by.
+      responses:
+        "200":
+          description: Matching accounts
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  results:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/Account"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+  /accounts/{id}:
+    get:
+      tags:
+        - Accounts
+      summary: Get account details
+      parameters:
+        - $ref: "#/components/parameters/AccountId"
+      responses:
+        "200":
+          description: Account details
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Account"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/NotFound"
+  /accounts/{id}/balance:
+    get:
+      tags:
+        - Accounts
+      summary: Get account balance
+      parameters:
+        - $ref: "#/components/parameters/AccountId"
+      responses:
+        "200":
+          description: Account balance
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Balance"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/NotFound"
+    patch:
+      tags:
+        - Accounts
+      summary: Update account balance
+      description: Updates a single account balance without replacing the whole account.
+      parameters:
+        - $ref: "#/components/parameters/AccountId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateBalanceRequest"
+            examples:
+              updateBalance:
+                value:
+                  balance: 1250
+      responses:
+        "200":
+          description: Balance updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BalanceUpdate"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/NotFound"
+  /transfers:
+    post:
+      tags:
+        - Transfers
+      summary: Transfer funds
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateTransferRequest"
+            examples:
+              transfer:
+                value:
+                  fromAccountId: acc_1
+                  toAccountId: acc_2
+                  amount: 200
+      responses:
+        "201":
+          description: Transfer completed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Transaction"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/NotFound"
+  /transactions:
+    get:
+      tags:
+        - Transactions
+      summary: List transactions
+      responses:
+        "200":
+          description: Transaction history
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Transaction"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+components:
+  securitySchemes:
+    ApiKeyAuth:
+      type: apiKey
+      in: header
+      name: x-api-key
+      description: Use demo-key-123 for local development.
+  parameters:
+    AccountId:
+      in: path
+      name: id
+      required: true
+      schema:
+        type: string
+      example: acc_1
+      description: Account ID.
+  responses:
+    BadRequest:
+      description: Invalid request
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+    Unauthorized:
+      description: Missing or invalid API key
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+    NotFound:
+      description: Resource not found
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+  schemas:
+    Account:
+      type: object
+      properties:
+        id:
+          type: string
+          example: acc_1
+        owner:
+          type: string
+          example: Jane Doe
+        type:
+          type: string
+          example: checking
+        balance:
+          type: number
+          example: 1000
+        currency:
+          type: string
+          example: USD
+        status:
+          type: string
+          example: active
+        balanceUpdatedAt:
+          type: string
+          format: date-time
+          example: 2026-05-27T14:30:00.000Z
+    Balance:
+      type: object
+      properties:
+        accountId:
+          type: string
+          example: acc_1
+        balance:
+          type: number
+          example: 1000
+        currency:
+          type: string
+          example: USD
+    BalanceUpdate:
+      type: object
+      properties:
+        accountId:
+          type: string
+          example: acc_1
+        previousBalance:
+          type: number
+          example: 1000
+        balance:
+          type: number
+          example: 1250
+        currency:
+          type: string
+          example: USD
+        balanceUpdatedAt:
+          type: string
+          format: date-time
+          example: 2026-05-27T14:30:00.000Z
+    CreateAccountRequest:
+      type: object
+      required:
+        - owner
+        - type
+      properties:
+        owner:
+          type: string
+          example: Jane Doe
+        type:
+          type: string
+          example: checking
+    CreateTransferRequest:
+      type: object
+      required:
+        - fromAccountId
+        - toAccountId
+        - amount
+      properties:
+        fromAccountId:
+          type: string
+          example: acc_1
+        toAccountId:
+          type: string
+          example: acc_2
+        amount:
+          type: number
+          minimum: 0.01
+          example: 200
+    UpdateBalanceRequest:
+      type: object
+      required:
+        - balance
+      properties:
+        balance:
+          type: number
+          minimum: 0
+          example: 1250
+    Transaction:
+      type: object
+      properties:
+        id:
+          type: string
+          example: txn_1
+        fromAccountId:
+          type: string
+          example: acc_1
+        toAccountId:
+          type: string
+          example: acc_2
+        amount:
+          type: number
+          example: 200
+        currency:
+          type: string
+          example: USD
+        status:
+          type: string
+          example: completed
+        referenceId:
+          type: string
+          example: ref_7e6d9822-44d1-45fc-90c2-c1eb24f2175f
+        createdAt:
+          type: string
+          format: date-time
+          example: 2026-05-26T18:30:00.000Z
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: object
+          properties:
+            code:
+              type: string
+              example: INSUFFICIENT_FUNDS
+            message:
+              type: string
+              example: The source account does not have enough balance.
+            requestId:
+              type: string
+              example: req_2f4f2f92-7d6d-4e88-9a2f-0a55d5a5a111
