@@ -2,7 +2,7 @@
 
 Mini Wallet API is a small fintech-style REST API and browser demo that simulates common wallet workflows: creating accounts, checking balances, transferring funds, and viewing transaction history.
 
-I built this project to practice the kind of API walkthroughs, integration troubleshooting, and customer-facing documentation that come up often in Solutions Engineer roles.
+I built this project to practice the kind of API walkthroughs, integration troubleshooting, and customer-facing documentation that come up often.
 
 ## What This Project Demonstrates
 
