@@ -355,32 +355,6 @@ npm test
 
 The tests cover account creation, account search, balance updates, adjustment history, transfers, transaction filters, demo seeding, missing auth, and insufficient funds.
 
-## UI Screenshots
-
-### Mini Wallet Dashboard
-
-![Mini Wallet Dashboard](images/home.png)
-
-### Account Created
-
-![Account Created](images/account-created.png)
-
-### Balance Lookup
-
-![Balance Lookup](images/balance.png)
-
-### Balance Update
-
-![Balance Update](images/balance-update.jpg)
-
-### Transfer Funds
-
-![Transfer Funds](images/transfer.png)
-
-### Transaction History
-
-![Transaction History](images/transactions.png)
-
 ## What I Learned
 
 Through this project I practiced:
