@@ -100,7 +100,8 @@ router.patch("/:id/balance", (req, res) => {
     previousBalance: update.previousBalance,
     balance: update.account.balance,
     currency: update.account.currency,
-    balanceUpdatedAt: update.account.balanceUpdatedAt
+    balanceUpdatedAt: update.account.balanceUpdatedAt,
+    transaction: update.transaction
   });
 });
 

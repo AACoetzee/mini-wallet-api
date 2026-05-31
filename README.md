@@ -10,6 +10,7 @@ I built this project to practice the kind of API walkthroughs, integration troub
 - API key authentication using request headers
 - JSON request and response workflows
 - Input validation and error handling
+- Automated API tests with Node's built-in test runner
 - A simple browser UI for live demos
 - Clear endpoint documentation for technical audiences
 - A customer-style flow from account creation to transfer confirmation
@@ -23,7 +24,7 @@ This API models a simplified digital wallet platform. A customer or partner appl
 3. Retrieve account details.
 4. Check or update balances.
 5. Transfer funds between accounts.
-6. Review transaction history.
+6. Review and filter transaction history.
 
 That makes it useful as a demo project for explaining API integrations, request/response behavior, authentication, and common failure cases.
 
@@ -129,7 +130,7 @@ The collection is useful for walking through the API like a customer integration
 3. Retrieve account details.
 4. Check and update balances.
 5. Transfer funds.
-6. View transaction history.
+6. View and filter transaction history.
 7. Test error cases like missing authentication, invalid balances, or insufficient funds.
 
 ## OpenAPI Documentation
@@ -153,6 +154,14 @@ demo-key-123
 ```
 
 ## Example API Flow
+
+### Load Demo Data
+
+```http
+POST /demo/seed
+```
+
+This resets the in-memory demo data and creates two accounts, one balance adjustment, and one transfer.
 
 ### Create Account
 
@@ -245,7 +254,17 @@ Response:
   "previousBalance": 1000,
   "balance": 1250,
   "currency": "USD",
-  "balanceUpdatedAt": "2026-05-27T14:30:00.000Z"
+  "balanceUpdatedAt": "2026-05-27T14:30:00.000Z",
+  "transaction": {
+    "id": "txn_1",
+    "type": "balance_adjustment",
+    "accountId": "acc_1",
+    "amount": 250,
+    "previousBalance": 1000,
+    "newBalance": 1250,
+    "currency": "USD",
+    "status": "completed"
+  }
 }
 ```
 
@@ -270,6 +289,7 @@ Response:
 ```json
 {
   "id": "txn_1",
+  "type": "transfer",
   "fromAccountId": "acc_1",
   "toAccountId": "acc_2",
   "amount": 200,
@@ -286,19 +306,26 @@ Response:
 GET /transactions
 ```
 
+Optional filters:
+
+```http
+GET /transactions?accountId=acc_1&type=transfer&status=completed
+```
+
 ## Demo Walkthrough
 
 A simple demo flow for this project:
 
 1. Start the server with `npm start`.
 2. Open `http://localhost:3000`.
-3. Create two accounts.
+3. Click **Load Demo Accounts** or create two accounts manually.
 4. Search for an account by owner name if you do not remember the account ID.
 5. Check the balance for the first account.
 6. Update a balance with `PATCH /accounts/:id/balance`.
-7. Transfer funds from the first account to the second account.
-8. View transaction history.
-9. Try an invalid request, such as a transfer with insufficient funds, to show error handling.
+7. Confirm the balance update appears as a `balance_adjustment` transaction.
+8. Transfer funds from the first account to the second account.
+9. Filter transaction history by account ID, type, or status.
+10. Try an invalid request, such as a transfer with insufficient funds, to show error handling.
 
 ## Project Structure
 
@@ -310,10 +337,23 @@ src/
   middleware/auth.js      API key authentication
   middleware/errorHandler.js
   routes/accounts.js      Account creation, search, lookup, and balance routes
+  routes/demo.js          Demo data seeding route
   routes/transfers.js     Transfer route and validation
-  routes/transactions.js  Transaction history route
+  routes/transactions.js  Transaction history and filtering route
   utils/errors.js         Shared structured error response helper
+test/
+  api.test.js             Automated API flow tests
 ```
+
+## Tests
+
+Run the automated API tests with:
+
+```bash
+npm test
+```
+
+The tests cover account creation, account search, balance updates, adjustment history, transfers, transaction filters, demo seeding, missing auth, and insufficient funds.
 
 ## UI Screenshots
 
@@ -355,8 +395,5 @@ Through this project I practiced:
 
 ## Future Improvements
 
-- Export the Postman collection into the repo
-- Add OpenAPI/Swagger documentation
-- Add automated API tests
 - Persist data with a database instead of in-memory arrays
-- Add pagination and filters for transaction history
+- Add pagination for transaction history

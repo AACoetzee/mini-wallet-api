@@ -4,6 +4,7 @@ const swaggerUi = require("swagger-ui-express");
 const YAML = require("yamljs");
 
 const accountsRouter = require("./routes/accounts");
+const demoRouter = require("./routes/demo");
 const transfersRouter = require("./routes/transfers");
 const transactionsRouter = require("./routes/transactions");
 const { authenticateApiKey } = require("./middleware/auth");
@@ -29,6 +30,7 @@ app.use("/docs", swaggerUi.serve, swaggerUi.setup(openApiDocument));
 
 app.use(authenticateApiKey);
 app.use("/accounts", accountsRouter);
+app.use("/demo", demoRouter);
 app.use("/transfers", transfersRouter);
 app.use("/transactions", transactionsRouter);
 app.use(errorHandler);

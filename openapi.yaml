@@ -15,6 +15,8 @@ tags:
     description: Health and landing endpoints
   - name: Accounts
     description: Account creation, search, lookup, and balance workflows
+  - name: Demo
+    description: Demo data helpers
   - name: Transfers
     description: Move funds between accounts
   - name: Transactions
@@ -164,6 +166,21 @@ paths:
           $ref: "#/components/responses/Unauthorized"
         "404":
           $ref: "#/components/responses/NotFound"
+  /demo/seed:
+    post:
+      tags:
+        - Demo
+      summary: Load demo data
+      description: Resets in-memory data and loads two demo accounts plus sample transaction history.
+      responses:
+        "201":
+          description: Demo data loaded
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DemoSeedResponse"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
   /transfers:
     post:
       tags:
@@ -199,6 +216,28 @@ paths:
       tags:
         - Transactions
       summary: List transactions
+      parameters:
+        - in: query
+          name: accountId
+          schema:
+            type: string
+          example: acc_1
+          description: Return transactions touching this account.
+        - in: query
+          name: type
+          schema:
+            type: string
+            enum:
+              - transfer
+              - balance_adjustment
+          example: transfer
+          description: Filter by transaction type.
+        - in: query
+          name: status
+          schema:
+            type: string
+          example: completed
+          description: Filter by transaction status.
       responses:
         "200":
           description: Transaction history
@@ -271,6 +310,8 @@ components:
           type: string
           format: date-time
           example: 2026-05-27T14:30:00.000Z
+        transaction:
+          $ref: "#/components/schemas/Transaction"
     Balance:
       type: object
       properties:
@@ -346,6 +387,15 @@ components:
         id:
           type: string
           example: txn_1
+        type:
+          type: string
+          enum:
+            - transfer
+            - balance_adjustment
+          example: transfer
+        accountId:
+          type: string
+          example: acc_1
         fromAccountId:
           type: string
           example: acc_1
@@ -355,6 +405,12 @@ components:
         amount:
           type: number
           example: 200
+        previousBalance:
+          type: number
+          example: 1000
+        newBalance:
+          type: number
+          example: 1250
         currency:
           type: string
           example: USD
@@ -368,6 +424,29 @@ components:
           type: string
           format: date-time
           example: 2026-05-26T18:30:00.000Z
+    DemoSeedResponse:
+      type: object
+      properties:
+        message:
+          type: string
+          example: Demo data loaded.
+        accounts:
+          type: array
+          items:
+            $ref: "#/components/schemas/Account"
+        transactions:
+          type: array
+          items:
+            $ref: "#/components/schemas/Transaction"
+        primaryAccountId:
+          type: string
+          example: acc_1
+        secondaryAccountId:
+          type: string
+          example: acc_2
+        transferId:
+          type: string
+          example: txn_2
     ErrorResponse:
       type: object
       properties:

@@ -17,6 +17,11 @@ function createAccount({ owner, type }) {
   return account;
 }
 
+function clearStore() {
+  accounts.length = 0;
+  transactions.length = 0;
+}
+
 function findAccountById(id) {
   return accounts.find(account => account.id === id);
 }
@@ -43,21 +48,40 @@ function updateAccountBalance(id, balance) {
   }
 
   const previousBalance = account.balance;
+  const adjustmentAmount = balance - previousBalance;
 
   account.balance = balance;
   account.balanceUpdatedAt = new Date().toISOString();
 
+  const transaction = createTransaction({
+    type: "balance_adjustment",
+    accountId: account.id,
+    amount: adjustmentAmount,
+    currency: account.currency,
+    previousBalance,
+    newBalance: balance
+  });
+
   return {
     account,
-    previousBalance
+    previousBalance,
+    transaction
   };
 }
 
-function createTransaction({ fromAccountId, toAccountId, amount, currency }) {
+function createTransaction({
+  type = "transfer",
+  accountId,
+  fromAccountId,
+  toAccountId,
+  amount,
+  currency,
+  previousBalance,
+  newBalance
+}) {
   const transaction = {
     id: `txn_${transactions.length + 1}`,
-    fromAccountId,
-    toAccountId,
+    type,
     amount,
     currency,
     status: "completed",
@@ -65,19 +89,82 @@ function createTransaction({ fromAccountId, toAccountId, amount, currency }) {
     createdAt: new Date().toISOString()
   };
 
+  if (type === "transfer") {
+    transaction.fromAccountId = fromAccountId;
+    transaction.toAccountId = toAccountId;
+  }
+
+  if (type === "balance_adjustment") {
+    transaction.accountId = accountId;
+    transaction.previousBalance = previousBalance;
+    transaction.newBalance = newBalance;
+  }
+
   transactions.push(transaction);
   return transaction;
 }
 
-function listTransactions() {
-  return transactions;
+function listTransactions({ accountId, status, type } = {}) {
+  return transactions.filter(transaction => {
+    const accountMatches = accountId
+      ? transaction.accountId === accountId ||
+        transaction.fromAccountId === accountId ||
+        transaction.toAccountId === accountId
+      : true;
+
+    const statusMatches = status
+      ? transaction.status.toLowerCase() === status.toLowerCase()
+      : true;
+
+    const typeMatches = type
+      ? transaction.type.toLowerCase() === type.toLowerCase()
+      : true;
+
+    return accountMatches && statusMatches && typeMatches;
+  });
+}
+
+function seedDemoData() {
+  clearStore();
+
+  const primaryAccount = createAccount({
+    owner: "Jane Doe",
+    type: "checking"
+  });
+
+  const secondaryAccount = createAccount({
+    owner: "John Doe",
+    type: "savings"
+  });
+
+  updateAccountBalance(primaryAccount.id, 1250);
+
+  primaryAccount.balance -= 200;
+  secondaryAccount.balance += 200;
+
+  const transfer = createTransaction({
+    fromAccountId: primaryAccount.id,
+    toAccountId: secondaryAccount.id,
+    amount: 200,
+    currency: primaryAccount.currency
+  });
+
+  return {
+    accounts,
+    transactions,
+    primaryAccountId: primaryAccount.id,
+    secondaryAccountId: secondaryAccount.id,
+    transferId: transfer.id
+  };
 }
 
 module.exports = {
+  clearStore,
   createAccount,
   createTransaction,
   findAccountById,
   listTransactions,
   searchAccounts,
+  seedDemoData,
   updateAccountBalance
 };

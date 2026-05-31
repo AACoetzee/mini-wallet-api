@@ -196,6 +196,20 @@
 
       <div class="card">
 
+        <h2>Demo Data</h2>
+
+        <div class="endpoint">
+          POST /demo/seed
+        </div>
+
+        <button onclick="loadDemoData()">
+          Load Demo Accounts
+        </button>
+
+      </div>
+
+      <div class="card">
+
         <h2>Create Account</h2>
 
         <div class="endpoint">
@@ -340,8 +354,23 @@
         <h2>Transaction History</h2>
 
         <div class="endpoint">
-          GET /transactions
+          GET /transactions?accountId=&type=&status=
         </div>
+
+        <input
+          id="transactionAccountId"
+          placeholder="Account ID filter (optional)"
+        >
+
+        <input
+          id="transactionType"
+          placeholder="Type: transfer or balance_adjustment"
+        >
+
+        <input
+          id="transactionStatus"
+          placeholder="Status (e.g. completed)"
+        >
 
         <button onclick="getTransactions()">
           View Transactions
@@ -418,6 +447,69 @@
       }
 
       return data;
+    }
+
+    function transactionDetails(transaction) {
+
+      if (transaction.type === "balance_adjustment") {
+        return `
+          <p>Account: ${transaction.accountId}</p>
+          <p>Previous Balance: $${transaction.previousBalance}</p>
+          <p>New Balance: $${transaction.newBalance}</p>
+          <p>Adjustment: $${transaction.amount} ${transaction.currency}</p>
+        `;
+      }
+
+      return `
+        <p>
+          ${transaction.fromAccountId}
+          →
+          ${transaction.toAccountId}
+        </p>
+        <p>
+          Amount: $${transaction.amount} ${transaction.currency}
+        </p>
+      `;
+
+    }
+
+    async function loadDemoData() {
+
+      try {
+
+        const demo = await apiRequest("/demo/seed", {
+          method: "POST"
+        });
+
+        document.getElementById("selectedAccount")
+          .textContent = demo.primaryAccountId;
+
+        const primaryAccount =
+          demo.accounts.find(account => account.id === demo.primaryAccountId);
+
+        document.getElementById("balanceDisplay")
+          .textContent = `$${primaryAccount.balance}`;
+
+        showResult(`
+
+          <h2>Demo Data Loaded</h2>
+
+          <p><strong>Primary Account:</strong> ${demo.primaryAccountId}</p>
+
+          <p><strong>Secondary Account:</strong> ${demo.secondaryAccountId}</p>
+
+          <p><strong>Accounts:</strong> ${demo.accounts.length}</p>
+
+          <p><strong>Transactions:</strong> ${demo.transactions.length}</p>
+
+        `);
+
+      } catch (error) {
+
+        showError(error);
+
+      }
+
     }
 
     async function createAccount() {
@@ -644,6 +736,8 @@
 
           <p><strong>Updated:</strong> ${update.balanceUpdatedAt}</p>
 
+          <p><strong>Adjustment Transaction:</strong> ${update.transaction.id}</p>
+
         `);
 
       } catch (error) {
@@ -713,8 +807,34 @@
 
       try {
 
-        const transactions =
-          await apiRequest("/transactions");
+        const accountId =
+          document.getElementById("transactionAccountId").value;
+
+        const type =
+          document.getElementById("transactionType").value;
+
+        const status =
+          document.getElementById("transactionStatus").value;
+
+        const params = new URLSearchParams();
+
+        if (accountId) {
+          params.append("accountId", accountId);
+        }
+
+        if (type) {
+          params.append("type", type);
+        }
+
+        if (status) {
+          params.append("status", status);
+        }
+
+        const query = params.toString();
+
+        const transactions = await apiRequest(
+          query ? `/transactions?${query}` : "/transactions"
+        );
 
         if (transactions.length === 0) {
 
@@ -734,15 +854,9 @@
                 <strong>${transaction.id}</strong>
               </p>
 
-              <p>
-                ${transaction.fromAccountId}
-                →
-                ${transaction.toAccountId}
-              </p>
+              <p>Type: ${transaction.type}</p>
 
-              <p>
-                Amount: $${transaction.amount} ${transaction.currency}
-              </p>
+              ${transactionDetails(transaction)}
 
               <p>
                 Status: ${transaction.status}

@@ -90,6 +90,47 @@
       ]
     },
     {
+      "name": "Demo",
+      "item": [
+        {
+          "name": "Load Demo Accounts",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Demo data loaded', function () {",
+                  "  pm.response.to.have.status(201);",
+                  "});",
+                  "",
+                  "const demo = pm.response.json();",
+                  "pm.collectionVariables.set('primaryAccountId', demo.primaryAccountId);",
+                  "pm.collectionVariables.set('secondaryAccountId', demo.secondaryAccountId);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/demo/seed",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "demo",
+                "seed"
+              ]
+            },
+            "description": "Loads demo accounts, one balance adjustment, and one transfer. Also stores account IDs for later requests."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
       "name": "Accounts",
       "item": [
         {
@@ -271,7 +312,8 @@
             },
             "description": "Updates the primary account balance with PATCH."
           },
-          "response": []
+          "response": [],
+          "description": "Updates the primary account balance with PATCH and creates a balance_adjustment transaction."
         }
       ]
     },
@@ -326,6 +368,62 @@
               ]
             },
             "description": "Lists all completed transfer transactions."
+          },
+          "response": []
+        },
+        {
+          "name": "Filter Transactions By Account",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/transactions?accountId={{primaryAccountId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "transactions"
+              ],
+              "query": [
+                {
+                  "key": "accountId",
+                  "value": "{{primaryAccountId}}"
+                }
+              ]
+            },
+            "description": "Filters transaction history to records touching the primary account."
+          },
+          "response": []
+        },
+        {
+          "name": "Filter Balance Adjustments",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/transactions?accountId={{primaryAccountId}}&type=balance_adjustment&status=completed",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "transactions"
+              ],
+              "query": [
+                {
+                  "key": "accountId",
+                  "value": "{{primaryAccountId}}"
+                },
+                {
+                  "key": "type",
+                  "value": "balance_adjustment"
+                },
+                {
+                  "key": "status",
+                  "value": "completed"
+                }
+              ]
+            },
+            "description": "Shows balance update history as balance_adjustment transactions."
           },
           "response": []
         }
